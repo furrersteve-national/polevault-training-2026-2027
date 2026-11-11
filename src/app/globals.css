@@ -1,0 +1,122 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Design-System «Beyond Gravity» – abgeleitet aus dem Logo des Pole Vaulting Team TV Dietlikon.
+ * Grundsatz: dezent und professionell. Navy trägt die Marke, Gelb (Stern) nur als sparsamer Akzent,
+ * kühle Grautöne für Flächen. Statusfarben sind gedämpft.
+ */
+:root {
+  /* Markenfarben (aus dem Logo) */
+  --brand-navy: #133159;
+  --brand-yellow: #f9dd29;
+  --brand-steel: #d6dce2;
+
+  /* Navy-Skala (aus den Logo-Verläufen) */
+  --navy-50: #f3f5f8;
+  --navy-100: #e4e8ec;
+  --navy-200: #d6dce2;
+  --navy-300: #b3bdca;
+  --navy-500: #647892;
+  --navy-700: #2f4a6d;
+  --navy-800: #1f3c61;
+  --navy-900: #133159;
+
+  --radius: 0.625rem;
+
+  --background: #f6f8fa;
+  --foreground: #16263d;
+  --card: #ffffff;
+  --card-foreground: #16263d;
+  --popover: #ffffff;
+  --popover-foreground: #16263d;
+
+  --primary: var(--navy-900);
+  --primary-foreground: #ffffff;
+  --secondary: var(--navy-50);
+  --secondary-foreground: var(--navy-800);
+  --muted: #eef1f4;
+  --muted-foreground: #5b6b80;
+  --accent: var(--navy-50);
+  --accent-foreground: var(--navy-900);
+
+  /* Akzent Gelb: nur für Hervorhebungen (z. B. «Heute», nächstes Training) */
+  --highlight: var(--brand-yellow);
+  --highlight-soft: #fdf6d2;
+  --highlight-foreground: #5c4b00;
+
+  /* Status – gedämpft */
+  --success: #2f7a52;
+  --success-soft: #e8f3ed;
+  --warning: #a16207;
+  --warning-soft: #fbf3e0;
+  --destructive: #b42318;
+  --destructive-soft: #fcebea;
+
+  --border: #e1e6ec;
+  --input: #cfd7e0;
+  --ring: var(--navy-500);
+}
+
+@theme inline {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-highlight: var(--highlight);
+  --color-highlight-soft: var(--highlight-soft);
+  --color-highlight-foreground: var(--highlight-foreground);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-destructive: var(--destructive);
+  --color-destructive-soft: var(--destructive-soft);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-navy-50: var(--navy-50);
+  --color-navy-100: var(--navy-100);
+  --color-navy-200: var(--navy-200);
+  --color-navy-300: var(--navy-300);
+  --color-navy-500: var(--navy-500);
+  --color-navy-700: var(--navy-700);
+  --color-navy-800: var(--navy-800);
+  --color-navy-900: var(--navy-900);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: 'tnum' 1, 'cv11' 1; /* Tabellenziffern: Zahlen stehen sauber untereinander */
+  }
+  h1, h2, h3 {
+    @apply text-navy-900;
+    letter-spacing: -0.01em;
+  }
+}
