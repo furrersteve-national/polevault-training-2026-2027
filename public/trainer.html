@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="de-CH">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Stabhochsprung – Trainer</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="top">
+  <h1>Trainer-Bereich</h1>
+  <button id="logout" class="link hidden" type="button">Abmelden</button>
+</header>
+
+<main>
+  <section id="login" class="card hidden">
+    <h2>Anmelden</h2>
+    <div class="field">
+      <label for="pw">Trainer-Passwort</label>
+      <input id="pw" type="password" autocomplete="current-password">
+    </div>
+    <button id="login-go" class="full" type="button">Anmelden</button>
+    <div id="login-msg" class="msg err hidden"></div>
+  </section>
+
+  <section id="app" class="hidden">
+    <div class="tabs">
+      <button data-tab="overview" class="active" type="button">Übersicht</button>
+      <button data-tab="person" type="button">Pro Person</button>
+      <button data-tab="admin" type="button">Verwaltung</button>
+    </div>
+
+    <div id="tab-overview">
+      <div class="card">
+        <h2>Bestleistungen</h2>
+        <p class="hint">Kleine Zahl = Veränderung vom ersten zum letzten Eintrag. Rot = seit über 14 Tagen nichts eingetragen.</p>
+        <div class="table-wrap"><table id="overview"></table></div>
+      </div>
+    </div>
+
+    <div id="tab-person" class="hidden">
+      <div class="card">
+        <label for="person">Person</label>
+        <select id="person"></select>
+      </div>
+      <div class="card">
+        <h2>Alle Einträge</h2>
+        <div class="table-wrap"><table id="person-table"></table></div>
+      </div>
+      <div id="person-charts"></div>
+    </div>
+
+    <div id="tab-admin" class="hidden">
+      <div class="card">
+        <h2>Athletinnen und Athleten</h2>
+        <p class="hint">Inaktive Personen erscheinen nicht mehr in der Auswahl. Ihre Daten bleiben gespeichert.</p>
+        <div id="athletes"></div>
+        <div class="field" style="margin-top:14px">
+          <label for="new-name">Neue Person</label>
+          <div class="inline"><input id="new-name" type="text" maxlength="40"><button id="add" type="button">Hinzufügen</button></div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Export</h2>
+        <p class="hint">Alle Einträge als CSV-Datei (öffnet in Excel oder Google Sheets).</p>
+        <button id="csv" class="secondary" type="button">CSV herunterladen</button>
+      </div>
+    </div>
+    <div id="app-msg" class="msg hidden"></div>
+  </section>
+</main>
+
+<script src="/common.js"></script>
+<script>
+let DATA = null; // {athletes:[{name,active}], entries, exercises}
+
+const pw = () => { try { return sessionStorage.getItem('sh_trainer') || ''; } catch { return ''; } };
+const setPw = (v) => { try { v ? sessionStorage.setItem('sh_trainer', v) : sessionStorage.removeItem('sh_trainer'); } catch {} };
+const hdr = () => ({ 'x-trainer': pw() });
+
+function flash(ok, text) {
+  const m = $('#app-msg');
+  m.className = 'msg ' + (ok ? 'ok' : 'err');
+  m.textContent = text;
+  clearTimeout(flash.t);
+  flash.t = setTimeout(() => m.classList.add('hidden'), 4000);
+}
+
+function showLogin(err) {
+  $('#app').classList.add('hidden');
+  $('#logout').classList.add('hidden');
+  $('#login').classList.remove('hidden');
+  const m = $('#login-msg');
+  m.textContent = err || '';
+  m.classList.toggle('hidden', !err);
+}
+
+async function load() {
+  try {
+    DATA = await api('/api/trainer', { headers: hdr() });
+  } catch (e) {
+    if (e.status === 401) { const had = pw(); setPw(''); return showLogin(had ? e.message : ''); }
+    return showLogin('Fehler: ' + e.message);
+  }
+  $('#login').classList.add('hidden');
+  $('#app').classList.remove('hidden');
+  $('#logout').classList.remove('hidden');
+  renderOverview();
+  renderPersonSelect();
+  renderPerson();
+  renderAdmin();
+}
+
+const activeNames = () => DATA.athletes.filter((a) => a.active).map((a) => a.name);
+const entriesOf = (name) => DATA.entries.filter((e) => e.athlete === name);
+
+function renderOverview() {
+  const names = activeNames();
+  const today = Date.parse(todayISO());
+  let html = '<thead><tr><th>Übung</th>' + names.map((n) => `<th>${esc(n)}</th>`).join('') + '</tr></thead><tbody>';
+  for (const ex of DATA.exercises) {
+    html += `<tr><td>${esc(ex.label)} <span class="muted">(${esc(ex.unit)})</span></td>`;
+    for (const n of names) {
+      const st = stats(seriesFor(entriesOf(n), ex.key));
+      if (!st) { html += '<td class="muted">–</td>'; continue; }
+      const cls = st.delta > 0 ? 'up' : st.delta < 0 ? 'down' : 'muted';
+      html += `<td><strong>${fmtNum(st.best)}</strong>${st.delta !== null ? `<span class="delta ${cls}">${fmtDelta(st.delta)}</span>` : ''}</td>`;
+    }
+    html += '</tr>';
+  }
+  html += '<tr><td>Letzter Eintrag</td>' + names.map((n) => {
+    const dates = entriesOf(n).map((e) => e.date).sort();
+    if (!dates.length) return '<td class="stale">nie</td>';
+    const last = dates[dates.length - 1];
+    const stale = (today - Date.parse(last)) / 86400000 > 14;
+    return `<td class="${stale ? 'stale' : ''}">${fmtDate(last)}</td>`;
+  }).join('') + '</tr>';
+  html += '<tr><td>Anzahl Trainings</td>' + names.map((n) => `<td>${new Set(entriesOf(n).map((e) => e.date)).size}</td>`).join('') + '</tr>';
+  $('#overview').innerHTML = html + '</tbody>';
+}
+
+function renderPersonSelect() {
+  const cur = $('#person').value;
+  const names = DATA.athletes.map((a) => a.name);
+  $('#person').innerHTML = names.map((n) => `<option ${n === cur ? 'selected' : ''}>${esc(n)}</option>`).join('');
+}
+
+function renderPerson() {
+  const name = $('#person').value;
+  if (!name) { $('#person-table').innerHTML = ''; $('#person-charts').innerHTML = ''; return; }
+  const ents = entriesOf(name);
+  const dates = [...new Set(ents.map((e) => e.date))].sort().reverse();
+  let html = '<thead><tr><th>Datum</th>' + DATA.exercises.map((ex) => `<th title="${esc(ex.label)}">${esc(ex.label.replace('Sprossenwand: ', 'Spr. '))}</th>`).join('') + '<th></th></tr></thead><tbody>';
+  for (const d of dates) {
+    html += `<tr><td>${fmtDate(d)}</td>` + DATA.exercises.map((ex) => {
+      const e = ents.find((x) => x.date === d && x.exercise === ex.key);
+      return `<td>${e ? fmtNum(e.value) : ''}</td>`;
+    }).join('') + `<td><button class="danger" data-del="${d}" type="button">Löschen</button></td></tr>`;
+  }
+  $('#person-table').innerHTML = dates.length ? html + '</tbody>' : '<tbody><tr><td class="muted">Noch keine Einträge.</td></tr></tbody>';
+  $('#person-charts').innerHTML = DATA.exercises.map((ex) => {
+    const s = seriesFor(ents, ex.key);
+    if (!s.length) return '';
+    const st = stats(s);
+    return `<div class="card"><h2>${esc(ex.label)} <span class="muted">– Bestleistung ${fmtNum(st.best)} ${esc(ex.unit)}</span></h2>${lineChart(s, ex.unit)}</div>`;
+  }).join('');
+}
+
+function renderAdmin() {
+  $('#athletes').innerHTML = DATA.athletes.map((a) => `
+    <div class="athlete-row"><span>${esc(a.name)}</span>
+      <label style="font-weight:400;margin:0"><input type="checkbox" data-active="${esc(a.name)}" ${a.active ? 'checked' : ''}> aktiv</label>
+    </div>`).join('');
+}
+
+async function post(body, okText) {
+  try {
+    await api('/api/trainer', { method: 'POST', headers: hdr(), body });
+    flash(true, okText);
+    await load();
+  } catch (e) {
+    flash(false, e.message);
+  }
+}
+
+$('#login-go').addEventListener('click', () => { setPw($('#pw').value); load(); });
+$('#pw').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('#login-go').click(); });
+$('#logout').addEventListener('click', () => { setPw(''); showLogin(); });
+$('#person').addEventListener('change', renderPerson);
+
+document.querySelectorAll('.tabs button').forEach((b) => b.addEventListener('click', () => {
+  document.querySelectorAll('.tabs button').forEach((x) => x.classList.toggle('active', x === b));
+  ['overview', 'person', 'admin'].forEach((t) => $('#tab-' + t).classList.toggle('hidden', t !== b.dataset.tab));
+}));
+
+$('#person-table').addEventListener('click', (e) => {
+  const d = e.target.dataset.del;
+  if (!d) return;
+  const name = $('#person').value;
+  if (confirm(`Alle Werte von ${name} am ${fmtDate(d)} löschen?`)) post({ action: 'deleteDay', name, date: d }, 'Gelöscht.');
+});
+
+$('#athletes').addEventListener('change', (e) => {
+  const name = e.target.dataset.active;
+  if (name !== undefined) post({ action: 'setActive', name, active: e.target.checked }, 'Gespeichert.');
+});
+
+$('#add').addEventListener('click', () => {
+  const name = $('#new-name').value.trim();
+  if (!name) return;
+  $('#new-name').value = '';
+  post({ action: 'addAthlete', name }, `${name} hinzugefügt.`);
+});
+
+$('#csv').addEventListener('click', () => {
+  const head = ['Name', 'Datum', ...DATA.exercises.map((ex) => `${ex.label} (${ex.unit})`)];
+  const rows = [head];
+  const keys = [...new Set(DATA.entries.map((e) => e.athlete + '|' + e.date))].sort();
+  for (const k of keys) {
+    const [n, d] = k.split('|');
+    rows.push([n, fmtDate(d), ...DATA.exercises.map((ex) => {
+      const e = DATA.entries.find((x) => x.athlete === n && x.date === d && x.exercise === ex.key);
+      return e ? fmtNum(e.value) : '';
+    })]);
+  }
+  const csv = '﻿' + rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(';')).join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  a.download = `stabhochsprung-${todayISO()}.csv`;
+  a.click();
+});
+
+if (pw()) load(); else showLogin();
+</script>
+</body>
+</html>

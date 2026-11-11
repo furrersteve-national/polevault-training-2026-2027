@@ -1,0 +1,7 @@
+{
+  "name": "stabhochsprung-portal",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Trainingsraster für die Stabhochsprunggruppe",
+  "engines": { "node": ">=18" }
+}
