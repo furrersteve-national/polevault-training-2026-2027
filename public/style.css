@@ -109,3 +109,18 @@ td .delta { display: block; font-size: .78rem; }
 .inline { display: flex; gap: 8px; }
 .inline input { flex: 1; }
 @media (min-width: 640px) { .stat-grid { grid-template-columns: 1fr 1fr; } }
+
+.ex-row { border-bottom: 1px solid var(--border); padding: 10px 0; }
+.ex-row.inactive .ex-text { opacity: .5; }
+.ex-view { display: flex; align-items: center; gap: 10px; }
+.ex-move { display: flex; flex-direction: column; gap: 4px; }
+.ex-text { flex: 1; min-width: 0; }
+.ex-text .hint { margin: 2px 0 0; }
+.ex-actions { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.ex-edit { margin-top: 10px; }
+button.icon { background: #fff; color: var(--blue); padding: 2px 8px; font-size: .9rem; }
+button.small { padding: 4px 8px; font-size: .85rem; }
+label.check { font-weight: 400; margin: 0; white-space: nowrap; }
+.ex-add { margin-top: 16px; padding-top: 12px; border-top: 2px solid var(--blue-light); }
+.ex-add h3 { font-size: .95rem; margin: 0 0 10px; }
+@media (max-width: 520px) { .ex-view { flex-wrap: wrap; } .ex-actions { width: 100%; justify-content: flex-start; padding-left: 38px; } }

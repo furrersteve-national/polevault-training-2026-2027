@@ -1,7 +1,5 @@
 const { rest, requireGroup, parseValue, parseDate, readBody, handler, httpError } = require('../lib/db');
-const exercises = require('../lib/exercises');
-
-const KEYS = new Set(exercises.map((e) => e.key));
+const { loadExercises } = require('../lib/exercises');
 
 async function activeAthlete(name) {
   const n = String(name || '').trim();
@@ -29,6 +27,7 @@ module.exports = handler(async (req) => {
     const athlete = await activeAthlete(body.athlete);
     const date = parseDate(body.date);
     const values = body.values && typeof body.values === 'object' ? body.values : {};
+    const KEYS = new Set((await loadExercises()).map((e) => e.key));
     const rows = [];
     for (const [key, raw] of Object.entries(values)) {
       if (!KEYS.has(key)) continue;

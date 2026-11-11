@@ -53,6 +53,20 @@
 
     <div id="tab-admin" class="hidden">
       <div class="card">
+        <h2>Übungen</h2>
+        <p class="hint">Reihenfolge mit ↑ ↓ ändern. «Aktiv» abwählen = Übung ausblenden (die Daten bleiben erhalten). Löschen geht nur bei Übungen ohne Einträge.</p>
+        <div id="exercises"></div>
+        <div class="ex-add">
+          <h3>Neue Übung</h3>
+          <div class="field"><label for="ex-label">Name</label><input id="ex-label" type="text" maxlength="60" placeholder="z. B. Seilspringen"></div>
+          <div class="field"><label for="ex-unit">Einheit</label>
+            <input id="ex-unit" type="text" maxlength="10" list="units" placeholder="Stk, Sek, m, cm …">
+            <datalist id="units"><option>Stk</option><option>Sek</option><option>m</option><option>cm</option><option>kg</option></datalist></div>
+          <div class="field"><label for="ex-hint">Beschreibung (optional)</label><input id="ex-hint" type="text" maxlength="300" placeholder="Wie wird die Übung ausgeführt und gemessen?"></div>
+          <button id="ex-add" type="button">Übung hinzufügen</button>
+        </div>
+      </div>
+      <div class="card">
         <h2>Athletinnen und Athleten</h2>
         <p class="hint">Inaktive Personen erscheinen nicht mehr in der Auswahl. Ihre Daten bleiben gespeichert.</p>
         <div id="athletes"></div>
@@ -114,12 +128,15 @@ async function load() {
 
 const activeNames = () => DATA.athletes.filter((a) => a.active).map((a) => a.name);
 const entriesOf = (name) => DATA.entries.filter((e) => e.athlete === name);
+const activeEx = () => DATA.exercises.filter((x) => x.active);
+// aktive Übungen + ausgeblendete, zu denen es Einträge gibt
+const shownEx = (ents) => DATA.exercises.filter((x) => x.active || ents.some((e) => e.exercise === x.key));
 
 function renderOverview() {
   const names = activeNames();
   const today = Date.parse(todayISO());
   let html = '<thead><tr><th>Übung</th>' + names.map((n) => `<th>${esc(n)}</th>`).join('') + '</tr></thead><tbody>';
-  for (const ex of DATA.exercises) {
+  for (const ex of activeEx()) {
     html += `<tr><td>${esc(ex.label)} <span class="muted">(${esc(ex.unit)})</span></td>`;
     for (const n of names) {
       const st = stats(seriesFor(entriesOf(n), ex.key));
@@ -151,15 +168,16 @@ function renderPerson() {
   if (!name) { $('#person-table').innerHTML = ''; $('#person-charts').innerHTML = ''; return; }
   const ents = entriesOf(name);
   const dates = [...new Set(ents.map((e) => e.date))].sort().reverse();
-  let html = '<thead><tr><th>Datum</th>' + DATA.exercises.map((ex) => `<th title="${esc(ex.label)}">${esc(ex.label.replace('Sprossenwand: ', 'Spr. '))}</th>`).join('') + '<th></th></tr></thead><tbody>';
+  const exs = shownEx(ents);
+  let html = '<thead><tr><th>Datum</th>' + exs.map((ex) => `<th title="${esc(ex.label)}">${esc(ex.label.replace('Sprossenwand: ', 'Spr. '))}</th>`).join('') + '<th></th></tr></thead><tbody>';
   for (const d of dates) {
-    html += `<tr><td>${fmtDate(d)}</td>` + DATA.exercises.map((ex) => {
+    html += `<tr><td>${fmtDate(d)}</td>` + exs.map((ex) => {
       const e = ents.find((x) => x.date === d && x.exercise === ex.key);
       return `<td>${e ? fmtNum(e.value) : ''}</td>`;
     }).join('') + `<td><button class="danger" data-del="${d}" type="button">Löschen</button></td></tr>`;
   }
   $('#person-table').innerHTML = dates.length ? html + '</tbody>' : '<tbody><tr><td class="muted">Noch keine Einträge.</td></tr></tbody>';
-  $('#person-charts').innerHTML = DATA.exercises.map((ex) => {
+  $('#person-charts').innerHTML = exs.map((ex) => {
     const s = seriesFor(ents, ex.key);
     if (!s.length) return '';
     const st = stats(s);
@@ -167,7 +185,36 @@ function renderPerson() {
   }).join('');
 }
 
+function renderExercises() {
+  const n = DATA.exercises.length;
+  $('#exercises').innerHTML = DATA.exercises.map((x, i) => {
+    const used = DATA.entries.some((e) => e.exercise === x.key);
+    return `<div class="ex-row ${x.active ? '' : 'inactive'}" data-key="${esc(x.key)}">
+      <div class="ex-view">
+        <div class="ex-move">
+          <button class="icon" data-move="up" ${i === 0 ? 'disabled' : ''} type="button" aria-label="nach oben">↑</button>
+          <button class="icon" data-move="down" ${i === n - 1 ? 'disabled' : ''} type="button" aria-label="nach unten">↓</button>
+        </div>
+        <div class="ex-text"><strong>${esc(x.label)}</strong> <span class="muted">(${esc(x.unit)})</span>
+          ${x.hint ? `<div class="hint">${esc(x.hint)}</div>` : ''}</div>
+        <div class="ex-actions">
+          <label class="check"><input type="checkbox" data-exactive ${x.active ? 'checked' : ''}> aktiv</label>
+          <button class="secondary small" data-edit type="button">Bearbeiten</button>
+          <button class="danger" data-exdel ${used ? 'disabled title="Hat Einträge – bitte ausblenden statt löschen"' : ''} type="button">Löschen</button>
+        </div>
+      </div>
+      <div class="ex-edit hidden">
+        <div class="field"><label>Name</label><input data-f="label" type="text" maxlength="60" value="${esc(x.label)}"></div>
+        <div class="field"><label>Einheit</label><input data-f="unit" type="text" maxlength="10" list="units" value="${esc(x.unit)}"></div>
+        <div class="field"><label>Beschreibung</label><input data-f="hint" type="text" maxlength="300" value="${esc(x.hint)}"></div>
+        <div class="inline"><button data-save type="button">Speichern</button><button class="secondary" data-cancel type="button">Abbrechen</button></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
 function renderAdmin() {
+  renderExercises();
   $('#athletes').innerHTML = DATA.athletes.map((a) => `
     <div class="athlete-row"><span>${esc(a.name)}</span>
       <label style="font-weight:400;margin:0"><input type="checkbox" data-active="${esc(a.name)}" ${a.active ? 'checked' : ''}> aktiv</label>
@@ -206,6 +253,36 @@ $('#athletes').addEventListener('change', (e) => {
   if (name !== undefined) post({ action: 'setActive', name, active: e.target.checked }, 'Gespeichert.');
 });
 
+$('#exercises').addEventListener('click', (e) => {
+  const row = e.target.closest('.ex-row');
+  if (!row) return;
+  const key = row.dataset.key;
+  const ex = DATA.exercises.find((x) => x.key === key);
+  const t = e.target;
+  if (t.dataset.move) post({ action: 'moveExercise', key, dir: t.dataset.move }, 'Reihenfolge gespeichert.');
+  else if (t.hasAttribute('data-edit')) { row.querySelector('.ex-view').classList.add('hidden'); row.querySelector('.ex-edit').classList.remove('hidden'); }
+  else if (t.hasAttribute('data-cancel')) renderExercises();
+  else if (t.hasAttribute('data-save')) {
+    const f = (n) => row.querySelector(`[data-f=${n}]`).value;
+    post({ action: 'updateExercise', key, label: f('label'), unit: f('unit'), hint: f('hint') }, 'Übung gespeichert.');
+  } else if (t.hasAttribute('data-exdel')) {
+    if (confirm(`Übung «${ex.label}» endgültig löschen?`)) post({ action: 'deleteExercise', key }, 'Übung gelöscht.');
+  }
+});
+
+$('#exercises').addEventListener('change', (e) => {
+  if (!e.target.hasAttribute('data-exactive')) return;
+  const key = e.target.closest('.ex-row').dataset.key;
+  post({ action: 'setExerciseActive', key, active: e.target.checked }, e.target.checked ? 'Übung wieder aktiv.' : 'Übung ausgeblendet.');
+});
+
+$('#ex-add').addEventListener('click', () => {
+  const label = $('#ex-label').value.trim(), unit = $('#ex-unit').value.trim(), hint = $('#ex-hint').value.trim();
+  if (!label || !unit) return flash(false, 'Bitte Name und Einheit eingeben.');
+  post({ action: 'addExercise', label, unit, hint }, `Übung «${label}» hinzugefügt.`)
+    .then(() => { if (DATA.exercises.some((x) => x.label === label)) ['#ex-label', '#ex-unit', '#ex-hint'].forEach((s) => ($(s).value = '')); });
+});
+
 $('#add').addEventListener('click', () => {
   const name = $('#new-name').value.trim();
   if (!name) return;
@@ -214,12 +291,13 @@ $('#add').addEventListener('click', () => {
 });
 
 $('#csv').addEventListener('click', () => {
-  const head = ['Name', 'Datum', ...DATA.exercises.map((ex) => `${ex.label} (${ex.unit})`)];
+  const exs = shownEx(DATA.entries);
+  const head = ['Name', 'Datum', ...exs.map((ex) => `${ex.label} (${ex.unit})`)];
   const rows = [head];
   const keys = [...new Set(DATA.entries.map((e) => e.athlete + '|' + e.date))].sort();
   for (const k of keys) {
     const [n, d] = k.split('|');
-    rows.push([n, fmtDate(d), ...DATA.exercises.map((ex) => {
+    rows.push([n, fmtDate(d), ...exs.map((ex) => {
       const e = DATA.entries.find((x) => x.athlete === n && x.date === d && x.exercise === ex.key);
       return e ? fmtNum(e.value) : '';
     })]);
