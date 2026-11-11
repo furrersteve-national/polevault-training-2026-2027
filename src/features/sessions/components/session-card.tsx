@@ -8,10 +8,17 @@ import type { RsvpStatus } from '@/features/attendance/lib';
 import { rsvpLocked, type Session } from '../types';
 import { SessionMeta } from './session-meta';
 
-type Props = { session: Session; rsvp: { status: RsvpStatus; reason: string }; today: string; highlight?: boolean };
+type Props = {
+  session: Session;
+  rsvp: { status: RsvpStatus; reason: string };
+  today: string;
+  highlight?: boolean;
+  /** Zusätzlicher Bereich unten, z. B. Trainingstagebuch */
+  footer?: React.ReactNode;
+};
 
 /** Ein Training aus Sicht der Athletin / des Athleten */
-export function SessionCard({ session, rsvp, today, highlight }: Props) {
+export function SessionCard({ session, rsvp, today, highlight, footer }: Props) {
   const cancelled = session.status === 'cancelled';
   const rel = relativeDay(session.date, today);
   const showRel = ['Heute', 'Morgen'].includes(rel);
@@ -41,6 +48,7 @@ export function SessionCard({ session, rsvp, today, highlight }: Props) {
                 locked={rsvpLocked(session)}
               />
             </div>
+            {footer && <div className="border-t pt-3">{footer}</div>}
           </>
         )}
       </CardContent>

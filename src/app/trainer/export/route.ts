@@ -31,10 +31,10 @@ export async function GET(req: Request) {
       rows.push([n, formatDate(d), ...shown.map((ex) => fmtNum(entries.find((e) => e.athlete === n && e.date === d && e.exercise === ex.key)?.value))]);
     }
   } else if (type === 'runups') {
-    const list = (await allRunups()).sort((a, b) => a.athlete.localeCompare(b.athlete) || a.date.localeCompare(b.date) || a.id - b.id);
+    const list = (await allRunups()).sort((a, b) => a.athlete.localeCompare(b.athlete) || a.steps - b.steps);
     const m = (n: number | null) => (n === null ? '' : String(n).replace('.', ','));
-    rows = [['Name', 'Datum', 'Anlauf (Schritte)', 'Anlauf (m)', 'Griffhöhe (m)', 'Bemerkung']];
-    for (const r of list) rows.push([r.athlete, formatDate(r.date), r.steps, m(r.runup_m), m(r.grip_m), r.note]);
+    rows = [['Name', 'Schritte', 'Anlauf (m)', 'Griffhöhe (m)', 'Bemerkung', 'Aktualisiert']];
+    for (const r of list) rows.push([r.athlete, r.steps, m(r.runup_m), m(r.grip_m), r.note, formatDate(r.date)]);
   } else {
     const [sessions, athletes] = await Promise.all([listSessions(), listAthletes()]);
     const planned = sessions.filter((s) => s.status === 'planned');

@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
 import { rest, supabaseKey } from '@/lib/db';
+import { signedDownloadUrls, signedUploadUrl } from '@/lib/storage';
 
 export const dynamic = 'force-dynamic';
 
-const TABLES = ['athletes', 'entries', 'exercises', 'sessions', 'rsvps', 'attendance', 'runups'];
+const TABLES = ['athletes', 'entries', 'exercises', 'sessions', 'rsvps', 'attendance', 'runups', 'diary_entries'];
 
 /**
  * Kleine Datenbankabfrage. Wird täglich von Vercel (Cron, siehe vercel.json) aufgerufen,
@@ -36,6 +37,14 @@ export async function GET(req: Request) {
       tables[t] = e instanceof Error ? e.message : 'Fehler';
     }
   }
-  const ok = Object.values(env).every((v) => v === 'gesetzt' || false) && Object.values(tables).every((v) => v === 'ok');
-  return NextResponse.json({ ok, umgebung: process.env.VERCEL_ENV ?? 'lokal', einstellungen: env, vorhandeneNamen, tabellen: tables });
+  // Speicher für Sprachaufnahmen: signierte Upload-Adresse holen (es wird nichts hochgeladen)
+  let speicher = 'ok';
+  try {
+    await signedUploadUrl('diary', `_check/${crypto.randomUUID()}.webm`);
+    await signedDownloadUrls('diary', ['_check/nicht-vorhanden.webm']);
+  } catch (e) {
+    speicher = e instanceof Error ? e.message : 'Fehler';
+  }
+  const ok = Object.values(env).every((v) => v === 'gesetzt') && Object.values(tables).every((v) => v === 'ok') && speicher === 'ok';
+  return NextResponse.json({ ok, umgebung: process.env.VERCEL_ENV ?? 'lokal', einstellungen: env, vorhandeneNamen, tabellen: tables, speicher });
 }

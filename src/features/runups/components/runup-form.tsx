@@ -2,51 +2,48 @@
 
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
-import { Loader2Icon } from 'lucide-react';
+import { Loader2Icon, Trash2Icon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
-import { saveRunup } from '../actions';
+import { deleteRunup, saveRunup } from '../actions';
 import { toInput, validateRunup, type Runup, type RunupInput } from '../lib';
 
 type Props = {
-  today: string;
-  /** Eintrag zum Korrigieren – ohne: neuer Eintrag */
+  /** Bestehende Karte – ohne: neu erfassen */
   entry?: Runup;
-  /** Vorschlag für einen neuen Eintrag (letzter Anlauf) */
-  suggestion?: Runup;
-  /** Schrittzahlen, die die Athletin schon verwendet hat (Schnellauswahl) */
-  recentSteps?: number[];
+  /** Feste Schrittzahl (z. B. 3). null = wählen bzw. frei eingeben */
+  steps: number | null;
+  /** Auswahl, z. B. 10/12/14 für den ganzen Anlauf */
+  choices?: readonly number[];
   onDone?: () => void;
 };
 
-const empty = (today: string, s?: Runup): RunupInput => ({
-  date: today,
-  steps: s ? String(s.steps) : '',
-  runup_m: toInput(s?.runup_m),
-  grip_m: toInput(s?.grip_m),
-  note: '',
-});
-
-/** Anlauf erfassen oder korrigieren. Vorausgefüllt mit dem letzten Anlauf, damit nur Änderungen getippt werden müssen. */
-export function RunupForm({ today, entry, suggestion, recentSteps = [], onDone }: Props) {
-  const [values, setValues] = useState<RunupInput>(() =>
-    entry
-      ? { date: entry.date, steps: String(entry.steps), runup_m: toInput(entry.runup_m), grip_m: toInput(entry.grip_m), note: entry.note }
-      : empty(today, suggestion),
-  );
+/** Eine Stabdaten-Karte erfassen oder bearbeiten */
+export function RunupForm({ entry, steps, choices, onDone }: Props) {
+  const [values, setValues] = useState<RunupInput>({
+    steps: entry ? String(entry.steps) : steps ? String(steps) : '',
+    runup_m: toInput(entry?.runup_m),
+    grip_m: toInput(entry?.grip_m),
+    note: entry?.note ?? '',
+  });
   const [touched, setTouched] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [pending, start] = useTransition();
   const errors = touched ? validateRunup(values) : {};
   const set = (k: keyof RunupInput) => (e: React.ChangeEvent<HTMLInputElement>) => setValues((v) => ({ ...v, [k]: e.target.value }));
-  const idp = entry ? `edit-${entry.id}` : 'new';
+  const idp = entry ? `r${entry.id}` : `new${steps ?? ''}`;
+  const freeSteps = steps === null && !choices;
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
     setTouched(true);
     const errs = validateRunup(values);
-    if (Object.keys(errs).length) return toast.error(Object.values(errs)[0]!);
+    if (Object.keys(errs).length) {
+      toast.error(Object.values(errs)[0]!);
+      return;
+    }
     start(async () => {
       const res = await saveRunup(values, entry?.id);
       if (!res.ok) {
@@ -54,13 +51,24 @@ export function RunupForm({ today, entry, suggestion, recentSteps = [], onDone }
         return;
       }
       toast.success(res.message);
-      if (!entry) setValues((v) => ({ ...v, note: '' }));
-      setTouched(false);
       onDone?.();
     });
   }
 
-  const field = (k: 'runup_m' | 'grip_m', label: string, hint: string, placeholder: string) => (
+  function remove() {
+    if (!entry) return;
+    start(async () => {
+      const res = await deleteRunup(entry.id);
+      if (!res.ok) {
+        toast.error(res.error);
+        return;
+      }
+      toast.success(res.message);
+      onDone?.();
+    });
+  }
+
+  const meter = (k: 'runup_m' | 'grip_m', label: string, hint: string, placeholder: string) => (
     <div className="flex flex-col gap-1.5">
       <Label htmlFor={`${idp}-${k}`} className="text-base">{label}</Label>
       <div className="flex items-center gap-3">
@@ -74,46 +82,56 @@ export function RunupForm({ today, entry, suggestion, recentSteps = [], onDone }
 
   return (
     <form onSubmit={submit} noValidate className="flex flex-col gap-5">
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor={`${idp}-date`}>Datum</Label>
-        <Input id={`${idp}-date`} type="date" value={values.date} max={today} onChange={set('date')} required className="max-w-56" />
-      </div>
-
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor={`${idp}-steps`} className="text-base">Anlauf in Schritten</Label>
-        <div className="flex items-center gap-3">
-          <Input id={`${idp}-steps`} inputMode="numeric" autoComplete="off" placeholder="z. B. 12" value={values.steps} onChange={set('steps')}
-            aria-invalid={Boolean(errors.steps) || undefined} aria-describedby={`${idp}-steps-hint`} className="max-w-40" />
-          <span className="text-sm text-muted-foreground">Schritte</span>
-        </div>
-        {recentSteps.length > 0 && (
-          <div className="flex flex-wrap gap-2" role="group" aria-label="Zuletzt verwendet">
-            {recentSteps.map((n) => (
+      {choices && (
+        <fieldset className="flex flex-col gap-2">
+          <legend className="mb-2 text-base font-medium">Schritte</legend>
+          <div className="flex gap-2">
+            {choices.map((n) => (
               <button key={n} type="button" onClick={() => setValues((v) => ({ ...v, steps: String(n) }))}
                 aria-pressed={values.steps === String(n)}
-                className="h-9 min-w-11 rounded-full border px-3 text-sm font-medium transition-colors hover:bg-accent aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground">
+                className="h-11 min-w-14 rounded-full border px-4 font-medium transition-colors hover:bg-accent aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground">
                 {n}
               </button>
             ))}
           </div>
-        )}
-        <p id={`${idp}-steps-hint`} className={cn('text-sm', errors.steps ? 'text-destructive' : 'text-muted-foreground')}>
-          {errors.steps ?? 'Ganze Schritte (Pflichtfeld).'}
-        </p>
-      </div>
+          {errors.steps && <p className="text-sm text-destructive">{errors.steps}</p>}
+        </fieldset>
+      )}
+      {freeSteps && (
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor={`${idp}-steps`} className="text-base">Schritte</Label>
+          <Input id={`${idp}-steps`} inputMode="numeric" autoComplete="off" placeholder="z. B. 5" value={values.steps} onChange={set('steps')}
+            aria-invalid={Boolean(errors.steps) || undefined} className="max-w-40" />
+          {errors.steps && <p className="text-sm text-destructive">{errors.steps}</p>}
+        </div>
+      )}
 
-      {field('runup_m', 'Anlauf in Metern', 'Distanz vom Startpunkt bis zum Einstichkasten.', 'z. B. 18,5')}
-      {field('grip_m', 'Griffhöhe in Metern', 'Vom unteren Stabende bis zur oberen Hand.', 'z. B. 3,40')}
+      {meter('runup_m', 'Anlauf', 'Vom Startpunkt bis zum Einstichkasten.', 'z. B. 18,5')}
+      {meter('grip_m', 'Griffhöhe', 'Vom unteren Stabende bis zur oberen Hand.', 'z. B. 3,40')}
 
       <div className="flex flex-col gap-1.5">
         <Label htmlFor={`${idp}-note`}>Bemerkung <span className="font-normal text-muted-foreground">(optional)</span></Label>
-        <Input id={`${idp}-note`} maxLength={200} placeholder="z. B. Stab 4,00 m / Gegenwind" value={values.note} onChange={set('note')} />
+        <Input id={`${idp}-note`} maxLength={200} placeholder="z. B. Stab 4,00 m / 60 kg" value={values.note} onChange={set('note')} />
       </div>
 
-      <Button type="submit" size="lg" disabled={pending}>
-        {pending && <Loader2Icon className="animate-spin" />}
-        {pending ? 'Wird gespeichert …' : entry ? 'Änderung speichern' : 'Anlauf speichern'}
-      </Button>
+      <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-between">
+        {entry ? (
+          confirmDelete ? (
+            <div className="flex gap-2">
+              <Button type="button" variant="destructive" disabled={pending} onClick={remove}>Wirklich löschen</Button>
+              <Button type="button" variant="ghost" disabled={pending} onClick={() => setConfirmDelete(false)}>Abbrechen</Button>
+            </div>
+          ) : (
+            <Button type="button" variant="ghost" className="text-muted-foreground hover:text-destructive" onClick={() => setConfirmDelete(true)}>
+              <Trash2Icon /> Karte löschen
+            </Button>
+          )
+        ) : <span />}
+        <Button type="submit" size="lg" disabled={pending}>
+          {pending && <Loader2Icon className="animate-spin" />}
+          {pending ? 'Wird gespeichert …' : 'Speichern'}
+        </Button>
+      </div>
     </form>
   );
 }

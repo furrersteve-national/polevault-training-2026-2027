@@ -18,11 +18,18 @@ export function supabaseKey() {
   ).trim();
 }
 
-function config() {
+export function config() {
   const url = (process.env.SUPABASE_URL || '').trim().replace(/\/+$/, '').replace(/\/rest\/v1$/, '');
   const key = supabaseKey();
   if (!url || !key) throw new AppError(500, 'Server nicht konfiguriert: SUPABASE_URL oder SUPABASE_SECRET_KEY fehlt.');
   return { url, key };
+}
+
+/** Header für Supabase-Aufrufe mit dem geheimen Schlüssel */
+export function authHeaders(key: string): Record<string, string> {
+  const h: Record<string, string> = { apikey: key };
+  if (!key.startsWith('sb_')) h.Authorization = `Bearer ${key}`; // alte JWT-Schlüssel
+  return h;
 }
 
 type RestOptions = { method?: 'GET' | 'POST' | 'PATCH' | 'DELETE'; body?: unknown; prefer?: string };
@@ -30,8 +37,7 @@ type RestOptions = { method?: 'GET' | 'POST' | 'PATCH' | 'DELETE'; body?: unknow
 /** Aufruf der Supabase-REST-API (PostgREST). Läuft nur auf dem Server – der geheime Schlüssel bleibt dort. */
 export async function rest<T = unknown>(path: string, { method = 'GET', body, prefer }: RestOptions = {}): Promise<T> {
   const { url, key } = config();
-  const headers: Record<string, string> = { apikey: key, 'Content-Type': 'application/json' };
-  if (!key.startsWith('sb_')) headers.Authorization = `Bearer ${key}`; // alte JWT-Schlüssel
+  const headers: Record<string, string> = { ...authHeaders(key), 'Content-Type': 'application/json' };
   if (prefer) headers.Prefer = prefer;
   const res = await fetch(`${url}/rest/v1/${path}`, {
     method,

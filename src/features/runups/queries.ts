@@ -2,7 +2,7 @@ import 'server-only';
 import { enc, restOr } from '@/lib/db';
 import type { Runup } from './lib';
 
-const FIELDS = 'id,athlete,date,steps,runup_m,grip_m,note,created_at';
+const FIELDS = 'id,athlete,date,steps,runup_m,grip_m,note,updated_at';
 
 const normalize = (rows: Runup[]) =>
   rows.map((r) => ({
@@ -13,9 +13,9 @@ const normalize = (rows: Runup[]) =>
   }));
 
 export async function runupsFor(athlete: string): Promise<Runup[]> {
-  return normalize(await restOr<Runup[]>(`runups?select=${FIELDS}&athlete=eq.${enc(athlete)}&order=date.desc,id.desc`, []));
+  return normalize(await restOr<Runup[]>(`runups?select=${FIELDS}&athlete=eq.${enc(athlete)}&order=steps.asc`, []));
 }
 
 export async function allRunups(): Promise<Runup[]> {
-  return normalize(await restOr<Runup[]>(`runups?select=${FIELDS}&order=date.desc,id.desc`, []));
+  return normalize(await restOr<Runup[]>(`runups?select=${FIELDS}&order=athlete.asc,steps.asc`, []));
 }

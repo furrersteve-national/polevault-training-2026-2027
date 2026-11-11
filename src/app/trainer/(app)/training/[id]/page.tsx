@@ -12,6 +12,8 @@ import { SessionAdminActions } from '@/features/sessions/components/session-admi
 import { presenceFor, rsvpsFor } from '@/features/attendance/queries';
 import { buildRoster, summarize } from '@/features/attendance/lib';
 import { AttendanceList } from '@/features/attendance/components/attendance-list';
+import { sharedDiaryForSession } from '@/features/diary/queries';
+import { DiaryList } from '@/features/diary/components/diary-list';
 
 export const metadata = { title: 'Training' };
 
@@ -20,7 +22,7 @@ export default async function TrainingDetailPage({ params }: { params: Promise<{
   const session = await getSession(id);
   if (!session) notFound();
   const today = todayZurich();
-  const [athletes, rsvps, presence] = await Promise.all([listAthletes(), rsvpsFor([id]), presenceFor([id])]);
+  const [athletes, rsvps, presence, diary] = await Promise.all([listAthletes(), rsvpsFor([id]), presenceFor([id]), sharedDiaryForSession(id)]);
   const roster = buildRoster(id, athletes.map((a) => a.name), rsvps, presence);
   const sum = summarize(roster);
   const cancelled = session.status === 'cancelled';
@@ -60,6 +62,18 @@ export default async function TrainingDetailPage({ params }: { params: Promise<{
           </CardHeader>
           <CardContent>
             <AttendanceList sessionId={id} roster={roster} canRecord={session.date <= today} />
+          </CardContent>
+        </Card>
+      )}
+
+      {!cancelled && session.date <= today && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Trainingstagebuch</CardTitle>
+            <p className="text-sm text-muted-foreground">Nur Einträge, welche die Athletinnen für dich freigegeben haben.</p>
+          </CardHeader>
+          <CardContent>
+            <DiaryList entries={diary} mode="trainer" emptyText="Noch keine freigegebenen Einträge zu diesem Training." />
           </CardContent>
         </Card>
       )}

@@ -4,39 +4,36 @@ import { revalidatePath } from 'next/cache';
 import { getAthlete, isTrainer, requireAthlete } from '@/lib/auth';
 import { enc, rest } from '@/lib/db';
 import { fail, run } from '@/lib/actions';
-import { daysBetween, todayZurich } from '@/lib/dates';
+import { todayZurich } from '@/lib/dates';
 import { isActiveAthlete } from '@/features/athletes/queries';
 import { parseNum, validateRunup, type RunupInput } from './lib';
-
-function rowFrom(input: RunupInput) {
-  const errors = validateRunup(input);
-  const first = Object.values(errors)[0];
-  if (first) fail(first);
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(input.date)) fail('Bitte ein gültiges Datum wählen.');
-  if (daysBetween(todayZurich(), input.date) > 1) fail('Das Datum liegt in der Zukunft.');
-  if (input.date < '2020-01-01') fail('Das Datum ist zu alt.');
-  return {
-    date: input.date,
-    steps: parseNum(input.steps)!,
-    runup_m: parseNum(input.runup_m),
-    grip_m: parseNum(input.grip_m),
-    note: input.note.trim(),
-  };
-}
 
 function refresh() {
   revalidatePath('/stabdaten');
   revalidatePath('/trainer/stabdaten');
 }
 
-/** Athletin erfasst einen Anlauf (neu) oder korrigiert einen eigenen (id gesetzt). */
+/** Athletin speichert eine Stabdaten-Karte. Ohne id: neu (oder vorhandene gleiche Schrittzahl überschreiben). */
 export async function saveRunup(input: RunupInput, id?: number) {
   return run(async () => {
     const athlete = await requireAthlete();
     if (!(await isActiveAthlete(athlete))) fail('Dein Name ist nicht mehr aktiv. Bitte beim Trainer melden.');
-    const row = rowFrom(input);
+    const errors = validateRunup(input);
+    const first = Object.values(errors)[0];
+    if (first) fail(first);
+    const row = {
+      steps: parseNum(input.steps)!,
+      runup_m: parseNum(input.runup_m),
+      grip_m: parseNum(input.grip_m),
+      note: input.note.trim(),
+      date: todayZurich(),
+      updated_at: new Date().toISOString(),
+    };
+
     if (id) {
       if (!Number.isInteger(id)) fail('Ungültiger Eintrag.');
+      const clash = await rest<{ id: number }[]>(`runups?select=id&athlete=eq.${enc(athlete)}&steps=eq.${row.steps}&id=neq.${id}`);
+      if (clash.length) fail(`Für ${row.steps} Schritte gibt es schon eine Karte. Bitte dort bearbeiten.`);
       const updated = await rest<unknown[]>(`runups?id=eq.${id}&athlete=eq.${enc(athlete)}`, {
         method: 'PATCH',
         body: row,
@@ -44,13 +41,17 @@ export async function saveRunup(input: RunupInput, id?: number) {
       });
       if (!updated.length) fail('Eintrag nicht gefunden.');
     } else {
-      await rest('runups', { method: 'POST', body: { ...row, athlete }, prefer: 'return=minimal' });
+      await rest('runups?on_conflict=athlete,steps', {
+        method: 'POST',
+        body: { ...row, athlete },
+        prefer: 'resolution=merge-duplicates,return=minimal',
+      });
     }
     refresh();
-  }, id ? 'Änderung gespeichert ✓' : 'Anlauf gespeichert ✓');
+  }, 'Gespeichert ✓');
 }
 
-/** Löschen: Athletin nur eigene Einträge, Trainer alle. */
+/** Löschen: Athletin nur eigene Karten, Trainer alle. */
 export async function deleteRunup(id: number) {
   return run(async () => {
     if (!Number.isInteger(id)) fail('Ungültiger Eintrag.');
@@ -61,5 +62,5 @@ export async function deleteRunup(id: number) {
     const deleted = await rest<unknown[]>(`runups?id=eq.${id}${filter}`, { method: 'DELETE', prefer: 'return=representation' });
     if (!deleted.length) fail('Eintrag nicht gefunden.');
     refresh();
-  }, 'Eintrag gelöscht.');
+  }, 'Karte gelöscht.');
 }
