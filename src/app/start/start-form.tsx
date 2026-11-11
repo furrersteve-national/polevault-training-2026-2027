@@ -44,7 +44,7 @@ export function StartForm({ codeRequired, initialAthletes }: { codeRequired: boo
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="code">Gruppen-Code</Label>
           <Input id="code" autoComplete="off" autoCapitalize="none" value={code} onChange={(e) => setCode(e.target.value)} aria-invalid={!!error || undefined} autoFocus />
-          <p className="text-sm text-muted-foreground">Den Code bekommst du vom Trainer.</p>
+          <p className="text-sm text-muted-foreground">Den Code bekommst du von den Trainer:innen.</p>
         </div>
         {error && <Alert variant="destructive"><AlertDescription className="col-span-2 col-start-1">{error}</AlertDescription></Alert>}
         <Button type="submit" size="lg" disabled={pending}>{pending && <Loader2Icon className="animate-spin" />} Weiter</Button>
@@ -62,7 +62,7 @@ export function StartForm({ codeRequired, initialAthletes }: { codeRequired: boo
             {athletes.map((n) => <SelectItem key={n} value={n}>{n}</SelectItem>)}
           </SelectContent>
         </Select>
-        <p className="text-sm text-muted-foreground">Dein Name fehlt? Sag dem Trainer Bescheid.</p>
+        <p className="text-sm text-muted-foreground">Dein Name fehlt? Sag den Trainer:innen Bescheid.</p>
       </div>
       {error && <Alert variant="destructive"><AlertDescription className="col-span-2 col-start-1">{error}</AlertDescription></Alert>}
       <Button type="submit" size="lg" disabled={pending}>{pending && <Loader2Icon className="animate-spin" />} Los geht&apos;s</Button>

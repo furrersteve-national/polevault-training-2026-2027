@@ -34,7 +34,7 @@ function clean(input: SessionInput): SessionInput {
     end_time,
     end_time_late,
     phase: str(input.phase, 60, 'Die Phase'),
-    coach: str(input.coach, 60, 'Der Trainer-Name'),
+    coach: str(input.coach, 60, 'Der Name der Trainer:in'),
     content: str(input.content, 300, 'Der Inhalt'),
     location: str(input.location, 80, 'Der Ort'),
     status,

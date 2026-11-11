@@ -34,14 +34,14 @@ export default async function TrainingsPage() {
           <h2 id="goals-title" className="text-base font-semibold">Meine Ziele</h2>
           <span className="text-sm text-muted-foreground">– daran arbeiten wir gerade</span>
         </div>
-        <GoalsPanel goals={goals} emptyText="Noch keine Ziele. Der Trainer trägt sie ein – oder du ergänzt selbst eins." />
+        <GoalsPanel goals={goals} emptyText="Noch keine Ziele. Deine Trainer:innen tragen sie ein – oder du ergänzt selbst eins." />
       </section>
 
       {upcoming.length === 0 ? (
         <Alert>
           <CalendarXIcon />
           <AlertTitle>Keine Trainings geplant</AlertTitle>
-          <AlertDescription>Sobald der Trainer neue Trainings einträgt, erscheinen sie hier.</AlertDescription>
+          <AlertDescription>Sobald die Trainer:innen neue Trainings eintragen, erscheinen sie hier.</AlertDescription>
         </Alert>
       ) : (
         <section aria-label="Kommende Trainings" className="flex flex-col gap-3">
@@ -68,7 +68,7 @@ export default async function TrainingsPage() {
       )}
 
       <p className="flex items-start gap-2 text-xs text-muted-foreground">
-        <InfoIcon className="mt-0.5 size-3.5 shrink-0" /> An- und Abmelden geht bis Trainingsbeginn. Danach bitte direkt beim Trainer melden.
+        <InfoIcon className="mt-0.5 size-3.5 shrink-0" /> An- und Abmelden geht bis Trainingsbeginn. Danach bitte direkt bei den Trainer:innen melden.
       </p>
     </div>
   );

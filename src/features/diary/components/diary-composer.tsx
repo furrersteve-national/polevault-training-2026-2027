@@ -106,7 +106,7 @@ export function DiaryComposer({ sessionId, entry, prompt = 'Wie lief das Trainin
       <div className="flex flex-wrap items-center justify-between gap-3">
         <label htmlFor={`${id}-share`} className="flex cursor-pointer items-center gap-2.5 text-sm">
           <Switch id={`${id}-share`} checked={shared} onCheckedChange={setShared} />
-          <span>{shared ? 'Für Trainer freigegeben' : 'Privat'}</span>
+          <span>{shared ? 'Für Trainer:innen freigegeben' : 'Privat'}</span>
         </label>
         <div className="flex items-center gap-2">
           {entry && (confirmDelete ? (

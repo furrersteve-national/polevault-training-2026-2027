@@ -14,11 +14,11 @@ import { presenceFor, rsvpsFor } from './queries';
 export async function setRsvp(sessionId: string, status: RsvpStatus, reason = '') {
   return run(async () => {
     const athlete = await requireAthlete();
-    if (!(await isActiveAthlete(athlete))) fail('Dein Name ist nicht mehr aktiv. Bitte beim Trainer melden.');
+    if (!(await isActiveAthlete(athlete))) fail('Dein Name ist nicht mehr aktiv. Bitte bei den Trainer:innen melden.');
     const session = await getSession(sessionId);
     if (!session) fail('Dieses Training gibt es nicht mehr.');
     if (session.status === 'cancelled') fail('Dieses Training fällt aus.');
-    if (rsvpLocked(session)) fail('Das Training hat schon begonnen. An- und Abmelden ist nicht mehr möglich – bitte melde dich direkt beim Trainer.');
+    if (rsvpLocked(session)) fail('Das Training hat schon begonnen. An- und Abmelden ist nicht mehr möglich – bitte melde dich direkt bei den Trainer:innen.');
     if (status !== 'yes' && status !== 'no') fail('Ungültiger Status.');
     await rest('rsvps?on_conflict=session_id,athlete', {
       method: 'POST',

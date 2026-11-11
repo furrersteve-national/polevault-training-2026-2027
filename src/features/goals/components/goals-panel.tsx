@@ -46,8 +46,8 @@ export function GoalsPanel({ goals, forAthlete, emptyText = 'Noch keine Ziele.' 
 
   const sourceLabel = (g: Goal) =>
     trainerView
-      ? g.created_by === 'athlete' ? 'von der Athletin' : g.updated_by === 'athlete' ? 'von der Athletin angepasst' : ''
-      : g.created_by === 'trainer' ? 'vom Trainer' : '';
+      ? g.created_by === 'athlete' ? 'selbst ergänzt' : g.updated_by === 'athlete' ? 'selbst angepasst' : ''
+      : g.created_by === 'trainer' ? 'von den Trainer:innen' : '';
 
   return (
     <div className="flex flex-col gap-3">

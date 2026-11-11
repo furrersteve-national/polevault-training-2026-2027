@@ -24,7 +24,7 @@ export function GoalForManyDialog({ names }: { names: string[] }) {
     start(async () => {
       const res = await addGoalForMany(text, picked);
       if (!res.ok) { toast.error(res.error); return; }
-      toast.success(`Ziel an ${res.data} ${res.data === 1 ? 'Athletin' : 'Athletinnen'} vergeben ✓`);
+      toast.success(`Ziel an ${res.data} ${res.data === 1 ? 'Athlet:in' : 'Athlet:innen'} vergeben ✓`);
       setOpen(false);
       setText('');
       setPicked([]);
@@ -38,7 +38,7 @@ export function GoalForManyDialog({ names }: { names: string[] }) {
         <DialogContent>
           <form onSubmit={submit} className="flex flex-col gap-4">
             <DialogHeader>
-              <DialogTitle>Ziel für mehrere Athletinnen</DialogTitle>
+              <DialogTitle>Ziel für mehrere Athlet:innen</DialogTitle>
               <DialogDescription>Jede bekommt das Ziel einzeln und kann es danach selbst anpassen oder abhaken.</DialogDescription>
             </DialogHeader>
             <div className="flex flex-col gap-1.5">
@@ -47,7 +47,7 @@ export function GoalForManyDialog({ names }: { names: string[] }) {
             </div>
             <div role="group" aria-labelledby="many-legend" className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
-                <p id="many-legend" className="text-sm font-medium">Athletinnen</p>
+                <p id="many-legend" className="text-sm font-medium">Athlet:innen</p>
                 <Button type="button" variant="link" size="sm" className="h-auto p-0" onClick={() => setPicked(all ? [] : names)}>
                   {all ? 'Keine' : 'Alle'} auswählen
                 </Button>

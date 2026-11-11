@@ -24,7 +24,7 @@ export default async function AdminPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Athletinnen und Athleten</CardTitle>
+          <CardTitle>Athlet:innen</CardTitle>
           <CardDescription>Inaktive Personen erscheinen nicht mehr in der Auswahl. Ihre Daten bleiben gespeichert.</CardDescription>
         </CardHeader>
         <CardContent><AthletesManager athletes={athletes} /></CardContent>

@@ -16,7 +16,7 @@ const folderOf = (athlete: string) => createHmac('sha256', `diary:${supabaseKey(
 
 async function activeAthlete() {
   const athlete = await requireAthlete();
-  if (!(await isActiveAthlete(athlete))) fail('Dein Name ist nicht mehr aktiv. Bitte beim Trainer melden.');
+  if (!(await isActiveAthlete(athlete))) fail('Dein Name ist nicht mehr aktiv. Bitte bei den Trainer:innen melden.');
   return athlete;
 }
 

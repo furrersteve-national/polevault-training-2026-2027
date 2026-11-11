@@ -8,7 +8,7 @@ export default function ErrorPage({ error, reset }: { error: Error & { digest?: 
     <main className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center gap-4 px-4 text-center">
       <h1 className="text-2xl font-bold">Etwas ist schiefgelaufen</h1>
       <p className="text-muted-foreground">
-        Die Seite konnte nicht geladen werden. Versuche es nochmals – wenn es wieder passiert, melde dich beim Trainer.
+        Die Seite konnte nicht geladen werden. Versuche es nochmals – wenn es wieder passiert, melde dich bei den Trainer:innen.
       </p>
       {error.digest && <p className="text-xs text-muted-foreground">Fehlercode: {error.digest}</p>}
       <Button onClick={reset}>Nochmals versuchen</Button>

@@ -39,7 +39,7 @@ export default async function TrainerRunupsPage({ searchParams }: { searchParams
     <div className="flex flex-col gap-5">
       <PageTitle
         title="Stabdaten"
-        description="Anlauf und Griffhöhe pro Anlauf – von den Athletinnen selbst gepflegt."
+        description="Anlauf und Griffhöhe pro Anlauf – von den Athlet:innen selbst gepflegt."
         actions={<Button asChild variant="outline" size="sm"><a href="/trainer/export?type=runups" download><DownloadIcon /> CSV</a></Button>}
       />
       <Tabs key={sp.person ?? ''} defaultValue={sp.person ? 'person' : 'overview'}>

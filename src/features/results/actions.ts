@@ -27,7 +27,7 @@ function checkDate(date: string) {
 export async function saveResults(date: string, values: Record<string, string>) {
   return run(async () => {
     const athlete = await requireAthlete();
-    if (!(await isActiveAthlete(athlete))) fail('Dein Name ist nicht mehr aktiv. Bitte beim Trainer melden.');
+    if (!(await isActiveAthlete(athlete))) fail('Dein Name ist nicht mehr aktiv. Bitte bei den Trainer:innen melden.');
     checkDate(date);
     const keys = new Set((await loadExercises()).map((e) => e.key));
     const rows: { athlete: string; date: string; exercise: string; value: number }[] = [];

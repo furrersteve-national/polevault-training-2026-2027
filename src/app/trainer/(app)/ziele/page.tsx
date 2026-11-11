@@ -15,7 +15,7 @@ export default async function TrainerGoalsPage() {
     <div className="flex flex-col gap-5">
       <PageTitle
         title="Ziele"
-        description="Die nächsten Themen pro Athletin. Sie erscheinen hervorgehoben auf ihrer Startseite; die Athletinnen können sie anpassen und abhaken."
+        description="Die nächsten Themen pro Athlet:in. Sie erscheinen hervorgehoben auf der Startseite und können dort angepasst und abgehakt werden."
         actions={<GoalForManyDialog names={names} />}
       />
       <div className="grid gap-4 md:grid-cols-2">

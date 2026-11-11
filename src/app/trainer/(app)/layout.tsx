@@ -19,14 +19,14 @@ export default async function TrainerLayout({ children }: { children: React.Reac
   await requireTrainer();
   return (
     <div className="flex min-h-dvh flex-col">
-      <AppHeader title="Trainer-Bereich" href="/trainer">
+      <AppHeader title="Trainer:innen-Bereich" href="/trainer">
         <form action={trainerLogout}>
           <button type="submit" className={headerButtonClass}>
             <LogOutIcon className="size-4" aria-hidden /> Abmelden
           </button>
         </form>
       </AppHeader>
-      <nav aria-label="Trainer-Navigation" className="sticky top-14 z-20 border-b bg-card">
+      <nav aria-label="Navigation Trainer:innen" className="sticky top-14 z-20 border-b bg-card">
         <div className="mx-auto flex max-w-3xl gap-1 overflow-x-auto px-4">
           {NAV.map(({ href, label, icon: Icon, exact, also }) => (
             <NavLink

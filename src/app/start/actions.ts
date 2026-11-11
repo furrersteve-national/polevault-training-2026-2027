@@ -8,7 +8,7 @@ import { isActiveAthlete, listAthletes } from '@/features/athletes/queries';
 /** Schritt 1: Gruppen-Code prüfen, danach die Namen liefern */
 export async function verifyCode(code: string) {
   return run(async () => {
-    if (!checkGroupCode(code)) fail('Der Gruppen-Code stimmt nicht. Bitte beim Trainer nachfragen.');
+    if (!checkGroupCode(code)) fail('Der Gruppen-Code stimmt nicht. Bitte bei den Trainer:innen nachfragen.');
     return (await listAthletes()).map((a) => a.name);
   });
 }

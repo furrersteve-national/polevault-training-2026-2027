@@ -17,7 +17,7 @@ function refresh() {
 export async function saveRunup(input: RunupInput, id?: number) {
   return run(async () => {
     const athlete = await requireAthlete();
-    if (!(await isActiveAthlete(athlete))) fail('Dein Name ist nicht mehr aktiv. Bitte beim Trainer melden.');
+    if (!(await isActiveAthlete(athlete))) fail('Dein Name ist nicht mehr aktiv. Bitte bei den Trainer:innen melden.');
     const errors = validateRunup(input);
     const first = Object.values(errors)[0];
     if (first) fail(first);

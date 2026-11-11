@@ -17,7 +17,7 @@ export default async function TrainerDiaryPage({ searchParams }: { searchParams:
     <div className="flex flex-col gap-5">
       <PageTitle
         title="Trainingstagebuch"
-        description="Einträge, welche die Athletinnen für dich freigegeben haben. Private Einträge siehst du nicht."
+        description="Einträge, welche die Athlet:innen für dich freigegeben haben. Private Einträge siehst du nicht."
       />
       <div className="flex flex-wrap items-center gap-3">
         <PersonPicker names={athletes.map((a) => a.name)} value={person} />

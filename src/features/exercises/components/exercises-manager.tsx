@@ -86,7 +86,7 @@ export function ExercisesManager({ exercises, usedKeys }: { exercises: Exercise[
           <form onSubmit={save} className="flex flex-col gap-4">
             <DialogHeader>
               <DialogTitle>{editing === 'new' ? 'Neue Übung' : 'Übung bearbeiten'}</DialogTitle>
-              <DialogDescription>Die Übung erscheint sofort im Formular der Athletinnen und Athleten.</DialogDescription>
+              <DialogDescription>Die Übung erscheint sofort im Formular der Athlet:innen.</DialogDescription>
             </DialogHeader>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="ex-label">Name *</Label>

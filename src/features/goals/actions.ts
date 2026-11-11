@@ -13,13 +13,13 @@ import { MAX_GOAL } from './types';
  */
 async function actor(forAthlete?: string) {
   if (forAthlete !== undefined) {
-    if (!(await isTrainer())) fail('Bitte als Trainer anmelden.', 401);
-    if (!(await isActiveAthlete(forAthlete))) fail('Athletin nicht gefunden.');
+    if (!(await isTrainer())) fail('Bitte als Trainer:in anmelden.', 401);
+    if (!(await isActiveAthlete(forAthlete))) fail('Athlet:in nicht gefunden.');
     return { athlete: forAthlete, by: 'trainer' as const };
   }
   const athlete = await getAthlete();
   if (!athlete) fail('Bitte zuerst anmelden.', 401);
-  if (!(await isActiveAthlete(athlete))) fail('Dein Name ist nicht mehr aktiv. Bitte beim Trainer melden.');
+  if (!(await isActiveAthlete(athlete))) fail('Dein Name ist nicht mehr aktiv. Bitte bei den Trainer:innen melden.');
   return { athlete, by: 'athlete' as const };
 }
 
@@ -59,11 +59,11 @@ export async function addGoal(text: string, forAthlete?: string) {
 /** Trainer: dasselbe Ziel mehreren Athletinnen auf einmal geben */
 export async function addGoalForMany(text: string, athletes: string[]) {
   return run(async () => {
-    if (!(await isTrainer())) fail('Bitte als Trainer anmelden.', 401);
+    if (!(await isTrainer())) fail('Bitte als Trainer:in anmelden.', 401);
     const value = cleanText(text);
     const active = new Set((await listAthletes()).map((a) => a.name));
     const targets = [...new Set(athletes)].filter((a) => active.has(a));
-    if (!targets.length) fail('Bitte mindestens eine Athletin wählen.');
+    if (!targets.length) fail('Bitte mindestens eine Person wählen.');
     await rest('goals', {
       method: 'POST',
       body: targets.map((athlete) => ({ athlete, text: value, created_by: 'trainer', updated_by: 'trainer' })),

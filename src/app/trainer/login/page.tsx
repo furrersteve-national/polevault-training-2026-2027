@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { isTrainer } from '@/lib/auth';
 import { LoginForm } from './login-form';
 
-export const metadata = { title: 'Trainer-Login' };
+export const metadata = { title: 'Login Trainer:innen' };
 
 export default async function TrainerLoginPage() {
   if (await isTrainer()) redirect('/trainer');
@@ -13,7 +13,7 @@ export default async function TrainerLoginPage() {
       <Card>
         <CardHeader>
           <Image src="/logo.svg" alt="Beyond Gravity – Pole Vaulting Team TV Dietlikon" width={160} height={74} priority unoptimized className="mb-3 h-16 w-auto self-start" />
-          <CardTitle className="text-2xl">Trainer-Bereich</CardTitle>
+          <CardTitle className="text-2xl">Trainer:innen-Bereich</CardTitle>
           <CardDescription>Du bleibst 30 Tage angemeldet.</CardDescription>
         </CardHeader>
         <CardContent>

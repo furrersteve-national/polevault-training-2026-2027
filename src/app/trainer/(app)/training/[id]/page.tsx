@@ -70,7 +70,7 @@ export default async function TrainingDetailPage({ params }: { params: Promise<{
         <Card>
           <CardHeader>
             <CardTitle>Trainingstagebuch</CardTitle>
-            <p className="text-sm text-muted-foreground">Nur Einträge, welche die Athletinnen für dich freigegeben haben.</p>
+            <p className="text-sm text-muted-foreground">Nur Einträge, welche die Athlet:innen für dich freigegeben haben.</p>
           </CardHeader>
           <CardContent>
             <DiaryList entries={diary} mode="trainer" emptyText="Noch keine freigegebenen Einträge zu diesem Training." />

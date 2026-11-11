@@ -15,7 +15,7 @@ export function SessionMeta({ session }: { session: Session }) {
           <span className="inline-flex items-center gap-1.5"><MapPinIcon className="size-4" aria-hidden /> <span className="sr-only">Ort:</span>{session.location}</span>
         )}
         {session.coach && (
-          <span className="inline-flex items-center gap-1.5"><UserIcon className="size-4" aria-hidden /> <span className="sr-only">Trainer:</span>{session.coach}</span>
+          <span className="inline-flex items-center gap-1.5"><UserIcon className="size-4" aria-hidden /> <span className="sr-only">Trainer:in: </span>{session.coach}</span>
         )}
       </div>
     </div>

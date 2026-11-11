@@ -102,7 +102,7 @@ export function SessionFormDialog({ trigger, session, defaults }: Props) {
                 {field('content', 'Inhalt', { placeholder: 'z. B. Anlauf, Einstich, Techniktraining', maxLength: 300 })}
                 <div className="grid grid-cols-2 gap-3">
                   {field('location', 'Ort', { placeholder: 'z. B. Dürrbach', maxLength: 80 })}
-                  {field('coach', 'Trainer', { maxLength: 60 })}
+                  {field('coach', 'Trainer:in', { maxLength: 60 })}
                 </div>
                 {field('phase', 'Phase', { placeholder: 'z. B. Technikaufbau', maxLength: 60 })}
               </>
