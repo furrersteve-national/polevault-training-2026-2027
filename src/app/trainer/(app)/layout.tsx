@@ -1,4 +1,4 @@
-import { BookOpenIcon, CalendarDaysIcon, LogOutIcon, RulerIcon, SettingsIcon, TrendingUpIcon } from 'lucide-react';
+import { BookOpenIcon, CalendarDaysIcon, LogOutIcon, RulerIcon, SettingsIcon, TargetIcon, TrendingUpIcon } from 'lucide-react';
 import { AppHeader, headerButtonClass } from '@/components/layout/app-header';
 import { NavLink } from '@/components/layout/nav-link';
 import { requireTrainer } from '@/lib/auth';
@@ -8,6 +8,7 @@ export const dynamic = 'force-dynamic';
 
 const NAV = [
   { href: '/trainer', label: 'Trainings', icon: CalendarDaysIcon, exact: true, also: '/trainer/training' },
+  { href: '/trainer/ziele', label: 'Ziele', icon: TargetIcon, exact: false, also: undefined },
   { href: '/trainer/resultate', label: 'Resultate', icon: TrendingUpIcon, exact: false, also: undefined },
   { href: '/trainer/stabdaten', label: 'Stabdaten', icon: RulerIcon, exact: false, also: undefined },
   { href: '/trainer/tagebuch', label: 'Tagebuch', icon: BookOpenIcon, exact: false, also: undefined },

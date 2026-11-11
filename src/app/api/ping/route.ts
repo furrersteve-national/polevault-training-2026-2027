@@ -4,7 +4,7 @@ import { signedDownloadUrls, signedUploadUrl } from '@/lib/storage';
 
 export const dynamic = 'force-dynamic';
 
-const TABLES = ['athletes', 'entries', 'exercises', 'sessions', 'rsvps', 'attendance', 'runups', 'diary_entries'];
+const TABLES = ['athletes', 'entries', 'exercises', 'sessions', 'rsvps', 'attendance', 'runups', 'runup_history', 'diary_entries', 'goals'];
 
 /**
  * Kleine Datenbankabfrage. Wird täglich von Vercel (Cron, siehe vercel.json) aufgerufen,
