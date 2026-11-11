@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { rest } from '@/lib/db';
+import { rest, supabaseKey } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,9 +21,12 @@ export async function GET(req: Request) {
     }
   }
 
-  const env = Object.fromEntries(
-    ['SUPABASE_URL', 'SUPABASE_SECRET_KEY', 'TRAINER_PASSWORD', 'GROUP_CODE'].map((k) => [k, process.env[k] ? 'gesetzt' : 'FEHLT']),
+  const env: Record<string, string> = Object.fromEntries(
+    ['SUPABASE_URL', 'TRAINER_PASSWORD', 'GROUP_CODE'].map((k) => [k, process.env[k]?.trim() ? 'gesetzt' : 'FEHLT']),
   );
+  env.SUPABASE_SECRET_KEY = supabaseKey() ? 'gesetzt' : 'FEHLT';
+  // Nur die NAMEN vorhandener Variablen (nie Werte), um Tippfehler zu finden
+  const vorhandeneNamen = Object.keys(process.env).filter((k) => /SUPA|TRAINER|GROUP|SECRET/i.test(k)).sort();
   const tables: Record<string, string> = {};
   for (const t of TABLES) {
     try {
@@ -34,5 +37,5 @@ export async function GET(req: Request) {
     }
   }
   const ok = Object.values(env).every((v) => v === 'gesetzt' || false) && Object.values(tables).every((v) => v === 'ok');
-  return NextResponse.json({ ok, umgebung: process.env.VERCEL_ENV ?? 'lokal', einstellungen: env, tabellen: tables });
+  return NextResponse.json({ ok, umgebung: process.env.VERCEL_ENV ?? 'lokal', einstellungen: env, vorhandeneNamen, tabellen: tables });
 }

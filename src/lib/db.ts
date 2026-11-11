@@ -7,9 +7,20 @@ export class AppError extends Error {
   }
 }
 
+/** Geheimer Schlüssel – akzeptiert auch die gängigen alternativen Variablennamen */
+export function supabaseKey() {
+  return (
+    process.env.SUPABASE_SECRET_KEY ||
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.SUPABASE_SECRET ||
+    process.env.SUPABASE_KEY ||
+    ''
+  ).trim();
+}
+
 function config() {
   const url = (process.env.SUPABASE_URL || '').trim().replace(/\/+$/, '').replace(/\/rest\/v1$/, '');
-  const key = (process.env.SUPABASE_SECRET_KEY || '').trim();
+  const key = supabaseKey();
   if (!url || !key) throw new AppError(500, 'Server nicht konfiguriert: SUPABASE_URL oder SUPABASE_SECRET_KEY fehlt.');
   return { url, key };
 }
