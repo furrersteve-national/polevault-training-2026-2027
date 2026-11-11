@@ -41,5 +41,17 @@ export async function rest<T = unknown>(path: string, { method = 'GET', body, pr
 
 export const enc = encodeURIComponent;
 
+export const isMissingTable = (e: unknown) => e instanceof AppError && e.message.includes('Datenbanktabelle fehlt');
+
+/** Wie rest(), liefert aber `fallback`, solange eine Tabelle noch nicht angelegt ist (SQL-Update fehlt). */
+export async function restOr<T>(path: string, fallback: T): Promise<T> {
+  try {
+    return await rest<T>(path);
+  } catch (e) {
+    if (isMissingTable(e)) return fallback;
+    throw e;
+  }
+}
+
 /** Werte für PostgREST "in.(…)"-Filter sicher zusammensetzen */
 export const inList = (values: string[]) => `(${values.map((v) => `"${v.replace(/"/g, '\\"')}"`).join(',')})`;

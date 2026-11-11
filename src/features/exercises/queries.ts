@@ -1,5 +1,5 @@
 import 'server-only';
-import { AppError, rest } from '@/lib/db';
+import { isMissingTable, rest } from '@/lib/db';
 import { DEFAULT_EXERCISES, type Exercise } from './types';
 
 /** Übungen laden. all=true: auch ausgeblendete (für den Trainer). */
@@ -10,7 +10,7 @@ export async function loadExercises({ all = false } = {}): Promise<Exercise[]> {
     );
     return rows.map((r) => ({ ...r, hint: r.hint || '' }));
   } catch (e) {
-    if (e instanceof AppError && e.message.includes('Datenbanktabelle fehlt')) {
+    if (isMissingTable(e)) {
       return all ? DEFAULT_EXERCISES : DEFAULT_EXERCISES.filter((d) => d.active);
     }
     throw e;
