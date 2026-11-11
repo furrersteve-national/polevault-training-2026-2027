@@ -43,7 +43,7 @@ export async function GET(req: Request) {
     await signedUploadUrl('diary', `_check/${crypto.randomUUID()}.webm`);
     await signedDownloadUrls('diary', ['_check/nicht-vorhanden.webm']);
   } catch (e) {
-    speicher = e instanceof Error ? e.message : 'Fehler';
+    speicher = e instanceof Error ? `${e.message} ${(e as Error & { detail?: string }).detail ?? ''}`.trim() : 'Fehler';
   }
   const ok = Object.values(env).every((v) => v === 'gesetzt') && Object.values(tables).every((v) => v === 'ok') && speicher === 'ok';
   return NextResponse.json({ ok, umgebung: process.env.VERCEL_ENV ?? 'lokal', einstellungen: env, vorhandeneNamen, tabellen: tables, speicher });

@@ -8,13 +8,15 @@ async function call<T>(path: string, init: { method: string; body?: unknown }): 
   const res = await fetch(`${url}/storage/v1/${path}`, {
     method: init.method,
     headers: { ...authHeaders(key), 'Content-Type': 'application/json' },
-    body: init.body === undefined ? undefined : JSON.stringify(init.body),
+    body: JSON.stringify(init.body ?? {}), // leerer JSON-Body nötig, sonst 400
     cache: 'no-store',
   });
   const text = await res.text();
   if (!res.ok) {
     console.error('Storage', res.status, path, text.slice(0, 300));
-    throw new AppError(502, `Speicherfehler (${res.status}).`);
+    let detail = '';
+    try { detail = String(JSON.parse(text).message ?? '').slice(0, 120); } catch { /* kein JSON */ }
+    throw Object.assign(new AppError(502, `Speicherfehler (${res.status}).`), { detail });
   }
   return (text ? JSON.parse(text) : null) as T;
 }
