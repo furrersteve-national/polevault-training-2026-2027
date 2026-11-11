@@ -15,23 +15,25 @@ export default async function DiaryPage() {
 
   // Nur das aktuelle (heute oder zuletzt) und das vorherige Training
   const recent = sessions.filter((s) => s.status === 'planned').reverse().slice(0, 2);
-  const capture: CaptureSession[] = recent.map((s, i) => ({
-    id: s.id,
-    label: `${s.date === today ? 'Heute' : i === 0 ? 'Aktuell' : 'Letztes'} · ${formatDateShort(s.date)}`,
-    detail: s.content,
-    entry: diary.find((d) => d.session_id === s.id),
-  }));
+  // Trainings mit Eintrag erscheinen nicht mehr im Eingabefeld – bearbeitet wird im Log (Stift)
+  const capture: CaptureSession[] = recent
+    .map((s, i) => ({
+      id: s.id,
+      label: `${s.date === today ? 'Heute' : i === 0 ? 'Aktuell' : 'Letztes'} · ${formatDateShort(s.date)}`,
+      detail: s.content,
+    }))
+    .filter((s) => !diary.some((d) => d.session_id === s.id));
 
   return (
     <div className="flex flex-col gap-5">
       <PageTitle title="Tagebuch" description="Kurz festhalten, was du aus dem Training mitnimmst. Privat, ausser du gibst es frei." />
       {capture.length > 0 ? (
         <DiaryCapture sessions={capture} />
-      ) : (
+      ) : recent.length === 0 ? (
         <p className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
           Sobald ein Training stattgefunden hat, kannst du hier deinen Eintrag schreiben.
         </p>
-      )}
+      ) : null}
       <section aria-label="Bisherige Einträge" className="flex flex-col gap-2">
         <h2 className="text-sm font-medium text-muted-foreground">Bisherige Einträge</h2>
         <DiaryList entries={diary} mode="athlete" emptyText="Noch keine Einträge." />

@@ -2,12 +2,11 @@
 
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import type { DiaryEntry } from '../types';
 import { DiaryComposer } from './diary-composer';
 
-export type CaptureSession = { id: string; label: string; detail: string; entry?: DiaryEntry };
+export type CaptureSession = { id: string; label: string; detail: string };
 
-/** Eintrag fürs aktuelle oder letzte Training – Auswahl per Schalter, Eingabe direkt darunter. */
+/** Neuer Eintrag fürs aktuelle oder letzte Training (nur Trainings ohne Eintrag). */
 export function DiaryCapture({ sessions }: { sessions: CaptureSession[] }) {
   const [selected, setSelected] = useState(sessions[0]?.id);
   const current = sessions.find((s) => s.id === selected) ?? sessions[0];
@@ -28,7 +27,7 @@ export function DiaryCapture({ sessions }: { sessions: CaptureSession[] }) {
                 s.id === current.id && 'border-primary bg-primary text-primary-foreground hover:bg-primary',
               )}
             >
-              {s.label}{s.entry && <span aria-label="hat Eintrag"> ✓</span>}
+              {s.label}
             </button>
           ))}
         </div>
@@ -36,7 +35,7 @@ export function DiaryCapture({ sessions }: { sessions: CaptureSession[] }) {
         <p className="text-sm font-medium">{current.label}</p>
       )}
       {current.detail && <p className="-mt-1 text-xs text-muted-foreground">{current.detail}</p>}
-      <DiaryComposer key={`${current.id}-${current.entry?.updated_at ?? 'neu'}`} sessionId={current.id} entry={current.entry} />
+      <DiaryComposer key={current.id} sessionId={current.id} />
     </section>
   );
 }
