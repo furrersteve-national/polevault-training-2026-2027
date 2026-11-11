@@ -9,7 +9,7 @@ import { loadExercises } from '@/features/exercises/queries';
 import { allEntries } from '@/features/results/queries';
 import { seriesFor, stats, type Entry } from '@/features/results/lib';
 import type { Exercise } from '@/features/exercises/types';
-import { LineChart } from '@/features/results/components/charts';
+import { LineChart, Sparkline } from '@/features/results/components/charts';
 import { DeleteDayButton } from '@/features/results/components/delete-day-button';
 import { PersonPicker } from '@/features/results/components/person-picker';
 
@@ -27,9 +27,10 @@ export default async function TrainerResultsPage({ searchParams }: { searchParam
   return (
     <div className="flex flex-col gap-5">
       <PageTitle title="Resultate" description="Bestleistungen und Verlauf der Gruppe" />
-      <Tabs defaultValue={sp.person ? 'person' : 'overview'}>
+      <Tabs key={sp.person ?? ''} defaultValue={sp.person ? 'person' : sp.tab === 'trend' ? 'trend' : 'overview'}>
         <TabsList>
-          <TabsTrigger value="overview">Übersicht</TabsTrigger>
+          <TabsTrigger value="overview">Bestresultate</TabsTrigger>
+          <TabsTrigger value="trend">Trend</TabsTrigger>
           <TabsTrigger value="person">Pro Person</TabsTrigger>
         </TabsList>
 
@@ -80,6 +81,10 @@ export default async function TrainerResultsPage({ searchParams }: { searchParam
               </Table>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="trend" className="flex flex-col gap-4">
+          <GroupTrend names={active} exercises={activeEx} entries={entries} />
         </TabsContent>
 
         <TabsContent value="person" className="flex flex-col gap-4">
@@ -135,6 +140,57 @@ function PersonResults({ name, entries: list, exercises }: { name: string; entri
           </Card>
         );
       })}
+    </>
+  );
+}
+
+/** Trend der Gruppe: pro Übung erster und letzter Wert jeder Person, sortiert nach Fortschritt */
+function GroupTrend({ names, exercises, entries }: { names: string[]; exercises: Exercise[]; entries: Entry[] }) {
+  const cards = exercises
+    .map((ex) => ({
+      ex,
+      rows: names
+        .map((n) => ({ n, series: seriesFor(entries.filter((e) => e.athlete === n), ex.key) }))
+        .filter((r) => r.series.length > 0)
+        .map((r) => ({ ...r, st: stats(r.series)! }))
+        .sort((a, b) => (b.st.delta ?? -Infinity) - (a.st.delta ?? -Infinity)),
+    }))
+    .filter((c) => c.rows.length > 0);
+  if (!cards.length) return <p className="text-sm text-muted-foreground">Noch keine Resultate eingetragen.</p>;
+  return (
+    <>
+      <p className="text-sm text-muted-foreground">Veränderung vom ersten zum letzten Eintrag – grösster Fortschritt zuoberst.</p>
+      {cards.map(({ ex, rows }) => (
+        <Card key={ex.key}>
+          <CardHeader><CardTitle>{ex.label} <span className="font-normal text-muted-foreground">({ex.unit})</span></CardTitle></CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead className="text-right">Erster</TableHead>
+                  <TableHead className="text-right">Letzter</TableHead>
+                  <TableHead className="text-right">Veränderung</TableHead>
+                  <TableHead className="w-28"><span className="sr-only">Verlauf</span></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {rows.map(({ n, series, st }) => (
+                  <TableRow key={n}>
+                    <TableCell className="font-medium">{n}</TableCell>
+                    <TableCell className="text-right tabular-nums">{fmtNum(st.first)}</TableCell>
+                    <TableCell className="text-right tabular-nums">{fmtNum(st.last)}</TableCell>
+                    <TableCell className={cn('text-right font-semibold tabular-nums', st.delta !== null && st.delta > 0 && 'text-success', st.delta !== null && st.delta < 0 && 'text-destructive')}>
+                      {st.delta === null ? <span className="font-normal text-muted-foreground">1 Eintrag</span> : fmtDelta(st.delta)}
+                    </TableCell>
+                    <TableCell><Sparkline series={series} className="h-7 w-24 text-primary" /></TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      ))}
     </>
   );
 }

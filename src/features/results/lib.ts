@@ -10,13 +10,16 @@ export function seriesFor(entries: Entry[], exerciseKey: string): Point[] {
     .sort((a, b) => a.date.localeCompare(b.date));
 }
 
-export type Stats = { best: number; first: number; last: number; delta: number | null; count: number; lastDate: string };
+export type Stats = { best: number; bestDate: string; first: number; last: number; delta: number | null; count: number; firstDate: string; lastDate: string };
 
 export function stats(series: Point[]): Stats | null {
   if (!series.length) return null;
   const values = series.map((p) => p.value);
+  const best = Math.max(...values);
   return {
-    best: Math.max(...values),
+    best,
+    bestDate: series.find((p) => p.value === best)!.date,
+    firstDate: series[0].date,
     first: values[0],
     last: values[values.length - 1],
     delta: series.length > 1 ? values[values.length - 1] - values[0] : null,

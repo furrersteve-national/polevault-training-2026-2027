@@ -3,7 +3,7 @@ import { rest, supabaseKey } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
-const TABLES = ['athletes', 'entries', 'exercises', 'sessions', 'rsvps', 'attendance'];
+const TABLES = ['athletes', 'entries', 'exercises', 'sessions', 'rsvps', 'attendance', 'runups'];
 
 /**
  * Kleine Datenbankabfrage. Wird täglich von Vercel (Cron, siehe vercel.json) aufgerufen,

@@ -48,6 +48,7 @@ export default async function AdminPage() {
         <CardContent className="flex flex-wrap gap-2">
           <Button asChild variant="outline"><a href="/trainer/export?type=results" download><DownloadIcon /> Resultate</a></Button>
           <Button asChild variant="outline"><a href="/trainer/export?type=attendance" download><DownloadIcon /> Anwesenheit</a></Button>
+          <Button asChild variant="outline"><a href="/trainer/export?type=runups" download><DownloadIcon /> Stabdaten</a></Button>
         </CardContent>
       </Card>
     </div>

@@ -1,4 +1,4 @@
-import { CalendarDaysIcon, LogOutIcon, TrendingUpIcon } from 'lucide-react';
+import { CalendarDaysIcon, LogOutIcon, RulerIcon, TrendingUpIcon } from 'lucide-react';
 import { AppHeader, headerButtonClass } from '@/components/layout/app-header';
 import { NavLink } from '@/components/layout/nav-link';
 import { requireAthlete } from '@/lib/auth';
@@ -9,6 +9,7 @@ export const dynamic = 'force-dynamic';
 const NAV = [
   { href: '/', label: 'Trainings', icon: CalendarDaysIcon, exact: true },
   { href: '/resultate', label: 'Resultate', icon: TrendingUpIcon },
+  { href: '/stabdaten', label: 'Stabdaten', icon: RulerIcon },
 ];
 
 export default async function AthleteLayout({ children }: { children: React.ReactNode }) {
@@ -41,7 +42,7 @@ export default async function AthleteLayout({ children }: { children: React.Reac
 
       {/* Handy: Navigation unten, gut mit dem Daumen erreichbar */}
       <nav aria-label="Hauptnavigation" className="fixed inset-x-0 bottom-0 z-30 border-t bg-card/95 pb-[env(safe-area-inset-bottom)] backdrop-blur sm:hidden">
-        <div className="grid grid-cols-2">
+        <div className="grid grid-cols-3">
           {NAV.map(({ href, label, icon: Icon, exact }) => (
             <NavLink key={href} href={href} exact={exact}
               className="flex flex-col items-center gap-1 py-2.5 text-xs font-medium text-muted-foreground"
