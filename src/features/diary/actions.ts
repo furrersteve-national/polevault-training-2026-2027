@@ -96,7 +96,7 @@ export async function saveDiary(input: SaveInput) {
     if (before?.audio_path && input.audio !== undefined && before.audio_path !== input.audio?.path) {
       await removeObjects(DIARY_BUCKET, [before.audio_path]);
     }
-    revalidatePath('/');
+    revalidatePath('/tagebuch');
     revalidatePath(`/trainer/training/${session.id}`);
     revalidatePath('/trainer/tagebuch');
   }, 'Tagebuch gespeichert ✓');
@@ -113,7 +113,7 @@ export async function deleteDiary(sessionId: string) {
     });
     if (!deleted.length) fail('Eintrag nicht gefunden.');
     await removeObjects(DIARY_BUCKET, deleted.map((d) => d.audio_path).filter((p): p is string => Boolean(p)));
-    revalidatePath('/');
+    revalidatePath('/tagebuch');
     revalidatePath(`/trainer/training/${sessionId}`);
     revalidatePath('/trainer/tagebuch');
   }, 'Eintrag gelöscht.');

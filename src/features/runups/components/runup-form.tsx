@@ -118,7 +118,7 @@ export function RunupForm({ entry, steps, choices, onDone }: Props) {
         {entry ? (
           confirmDelete ? (
             <div className="flex gap-2">
-              <Button type="button" variant="destructive" disabled={pending} onClick={remove}>Wirklich löschen</Button>
+              <Button type="button" variant="destructive" disabled={pending} onClick={remove}>Karte und Verlauf löschen</Button>
               <Button type="button" variant="ghost" disabled={pending} onClick={() => setConfirmDelete(false)}>Abbrechen</Button>
             </div>
           ) : (

@@ -59,8 +59,10 @@ export async function deleteRunup(id: number) {
     const athlete = trainer ? null : await getAthlete();
     if (!trainer && !athlete) fail('Bitte zuerst anmelden.', 401);
     const filter = athlete ? `&athlete=eq.${enc(athlete)}` : '';
-    const deleted = await rest<unknown[]>(`runups?id=eq.${id}${filter}`, { method: 'DELETE', prefer: 'return=representation' });
+    const deleted = await rest<{ athlete: string; steps: number }[]>(`runups?id=eq.${id}${filter}`, { method: 'DELETE', prefer: 'return=representation' });
     if (!deleted.length) fail('Eintrag nicht gefunden.');
+    // Verlauf dieser Karte ebenfalls entfernen
+    await rest(`runup_history?athlete=eq.${enc(deleted[0].athlete)}&steps=eq.${deleted[0].steps}`, { method: 'DELETE', prefer: 'return=minimal' });
     refresh();
   }, 'Karte gelöscht.');
 }

@@ -12,6 +12,18 @@ export type Runup = {
   updated_at?: string;
 };
 
+/** Ein Stand aus dem Verlauf einer Karte (wird bei jeder Änderung automatisch gespeichert) */
+export type RunupHistoryRow = {
+  id: number;
+  athlete: string;
+  steps: number;
+  date: string;
+  runup_m: number | null;
+  grip_m: number | null;
+  note: string;
+  created_at: string;
+};
+
 export type RunupInput = { steps: string; runup_m: string; grip_m: string; note: string };
 
 /** Die üblichen Anläufe: 3, 6, 8 Schritte und der ganze Anlauf mit 10, 12 oder 14 Schritten */

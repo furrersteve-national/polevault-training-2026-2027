@@ -101,8 +101,8 @@ export function AudioRecorder({ value, onChange }: { value: Recording | null; on
           <Button type="button" size="sm" variant="destructive" onClick={stop}><SquareIcon /> Stopp</Button>
         </div>
       ) : value ? (
-        <div className="flex flex-col gap-2 rounded-lg border p-3">
-          <audio controls src={preview} className="w-full" preload="metadata" />
+        <div className="flex flex-col gap-1">
+          <audio controls src={preview} className="h-10 w-full" preload="metadata" />
           <div className="flex items-center justify-between gap-2 text-sm text-muted-foreground">
             <span>Neue Aufnahme · {fmtDuration(value.seconds)}</span>
             <Button type="button" size="sm" variant="ghost" onClick={() => onChange(null)} className="hover:text-destructive">
@@ -111,7 +111,7 @@ export function AudioRecorder({ value, onChange }: { value: Recording | null; on
           </div>
         </div>
       ) : (
-        <Button type="button" variant="outline" size="lg" onClick={start} className="w-full sm:w-fit">
+        <Button type="button" variant="outline" size="sm" onClick={start} className="w-fit">
           <MicIcon /> Sprachnachricht aufnehmen
         </Button>
       )}

@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { formatDate } from '@/lib/dates';
 import { listAthletes } from '@/features/athletes/queries';
-import { allRunups } from '@/features/runups/queries';
+import { allRunups, runupHistoryFor } from '@/features/runups/queries';
 import { cardsFor, fmtM, FULL_STEPS, SHORT_STEPS, type Runup } from '@/features/runups/lib';
 import { RunupCards } from '@/features/runups/components/runup-cards';
 import { PersonPicker } from '@/features/results/components/person-picker';
@@ -33,6 +33,7 @@ export default async function TrainerRunupsPage({ searchParams }: { searchParams
   const active = athletes.filter((a) => a.active).map((a) => a.name);
   const of = (name: string) => runups.filter((r) => r.athlete === name);
   const person = sp.person && athletes.some((a) => a.name === sp.person) ? sp.person : active[0] ?? '';
+  const history = person ? await runupHistoryFor(person) : [];
 
   return (
     <div className="flex flex-col gap-5">
@@ -94,7 +95,7 @@ export default async function TrainerRunupsPage({ searchParams }: { searchParams
         <TabsContent value="person" className="flex flex-col gap-4">
           <PersonPicker names={athletes.map((a) => a.name)} value={person} />
           {person && (of(person).length
-            ? <RunupCards cards={cardsFor(of(person))} readOnly />
+            ? <RunupCards cards={cardsFor(of(person))} history={history} readOnly />
             : <p className="text-sm text-muted-foreground">{person} hat noch keine Stabdaten erfasst.</p>)}
         </TabsContent>
       </Tabs>
