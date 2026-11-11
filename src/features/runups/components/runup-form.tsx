@@ -49,7 +49,10 @@ export function RunupForm({ today, entry, suggestion, recentSteps = [], onDone }
     if (Object.keys(errs).length) return toast.error(Object.values(errs)[0]!);
     start(async () => {
       const res = await saveRunup(values, entry?.id);
-      if (!res.ok) return toast.error(res.error);
+      if (!res.ok) {
+        toast.error(res.error);
+        return;
+      }
       toast.success(res.message);
       if (!entry) setValues((v) => ({ ...v, note: '' }));
       setTouched(false);
